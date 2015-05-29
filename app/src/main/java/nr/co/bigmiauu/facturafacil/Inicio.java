@@ -4,14 +4,47 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
 
 
 public class Inicio extends ActionBarActivity {
+
+    private TextView productos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inicio);
+        productos=(TextView)findViewById(R.id.textView3);
+        registrarEventos();
+    }
+
+
+    private void registrarEventos(){
+
+        /// selecciona la lista en pantalla segun su ID
+        ListView lista1 = (ListView) findViewById(R.id.listView);
+
+        // registra una accion para el evento click
+        lista1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                /// Obtiene el valor de la casilla elegida
+                String itemSeleccionado = adapterView.getItemAtPosition(i).toString();
+
+                // muestra un mensaje
+                Toast.makeText( getApplicationContext(), "Haz hecho click en " + itemSeleccionado, Toast.LENGTH_SHORT).show();
+                productos.setText(productos.getText()+ itemSeleccionado);
+
+            }
+        });
+
     }
 
 
