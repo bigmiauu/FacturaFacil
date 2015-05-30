@@ -40,7 +40,7 @@ public class Inicio extends ActionBarActivity {
 
                 // muestra un mensaje
                 Toast.makeText( getApplicationContext(), "Haz hecho click en " + itemSeleccionado, Toast.LENGTH_SHORT).show();
-                productos.setText(productos.getText()+ itemSeleccionado);
+                productos.setText(productos.getText()+"\n" + itemSeleccionado);
 
             }
         });
