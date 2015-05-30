@@ -1,5 +1,6 @@
 package nr.co.bigmiauu.facturafacil;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -15,12 +16,26 @@ import android.widget.Toast;
 public class Inicio extends ActionBarActivity {
 
     private TextView productos;
+    private TextView total;
+
+    public int pp1 = 150;
+    public int pp2 = 50;
+    public int pp3 = 250;
+    public int pp4 = 300;
+    public int totdinero = 0; //dinero total
+
+    public int pc1 = 0;
+    public int pc2 = 0;
+    public int pc3 = 0;
+    public int pc4 = 0;
+    public int totalproductos = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inicio);
         productos=(TextView)findViewById(R.id.textView3);
+        total=(TextView)findViewById(R.id.textView5);
         registrarEventos();
     }
 
@@ -28,22 +43,53 @@ public class Inicio extends ActionBarActivity {
     private void registrarEventos(){
 
         /// selecciona la lista en pantalla segun su ID
-        ListView lista1 = (ListView) findViewById(R.id.listView);
+        final ListView lista1 = (ListView) findViewById(R.id.listView);
 
         // registra una accion para el evento click
         lista1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            public void onItemClick(AdapterView<?> adapterView, View view,final int i, long l) {
+
 
                 /// Obtiene el valor de la casilla elegida
                 String itemSeleccionado = adapterView.getItemAtPosition(i).toString();
+                int posicion = i;
+                if(totalproductos<=5) {
+                    // muestra un mensaje
+                    Toast.makeText(getApplicationContext(),"Agregado "+itemSeleccionado, Toast.LENGTH_SHORT).show();
+                    productos.setText(productos.getText() + "\n" + itemSeleccionado);
 
-                // muestra un mensaje
-                Toast.makeText( getApplicationContext(), "Haz hecho click en " + itemSeleccionado, Toast.LENGTH_SHORT).show();
-                productos.setText(productos.getText()+"\n" + itemSeleccionado);
+                    if (posicion == 0) {
+                        totdinero = totdinero + pp1;
+                        total.setText("" + totdinero);
+                        pc1 = pc1 + 1;
+                    }
+                    if (posicion == 1) {
+                        totdinero = totdinero + pp2;
+                        total.setText("" + totdinero);
+                        pc2 = pc2 + 1;
+                    }
+                    if (posicion == 2) {
+                        totdinero = totdinero + pp3;
+                        total.setText("" + totdinero);
+                        pc2 = pc3 + 1;
+                    }
+                    if (posicion == 3) {
+                        totdinero = totdinero + pp4;
+                        total.setText("" + totdinero);
+                        pc2 = pc4 + 1;
+                    }
+                    totalproductos++;
+
+                }
+                else{
+                    Toast.makeText(getApplicationContext(),"Maximo de productos alcanzado", Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
+
+
 
     }
 
@@ -68,5 +114,16 @@ public class Inicio extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void compra (View view){
+        Intent j = new Intent(this,  activity_comprar.class);
+        j.putExtra("totaldinero",""+totdinero);
+        j.putExtra("totalproductos",""+totalproductos);
+        j.putExtra("pc1",""+pc1);
+        j.putExtra("pc2",""+pc2);
+        j.putExtra("pc3",""+pc3);
+        j.putExtra("pc4",""+pc4);
+        startActivity(j);
     }
 }
