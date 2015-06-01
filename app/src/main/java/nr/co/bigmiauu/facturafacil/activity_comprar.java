@@ -31,9 +31,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 
 
@@ -84,9 +86,10 @@ public class activity_comprar extends ActionBarActivity {
     private EditText colonia;
     private EditText localidad;
     private EditText cp;
-    private String fecha;
+    private String fecha = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss").format(new Date());;
 
     private String totaldinero;
+    public String totaltotal;
     private TextView descripcion;
 
     private String codigoqr;
@@ -113,7 +116,9 @@ public class activity_comprar extends ActionBarActivity {
 
 
     private final static String NOMBRE_DIRECTORIO = "MiPdf";
-    private final static String NOMBRE_DOCUMENTO = "prueba.pdf";
+    private final String NOMBRE_DOCUMENTO = "facturafacil"+fecha+".pdf";
+    private final String NOMBRE_DOCUMENTO2 = "facturafacil"+fecha+".xml";
+
     private final static String ETIQUETA_ERROR = "ERROR";
 
     @Override
@@ -127,6 +132,7 @@ public class activity_comprar extends ActionBarActivity {
         colonia=(EditText)findViewById(R.id.editText4);
         localidad=(EditText)findViewById(R.id.editText5);
         cp=(EditText)findViewById(R.id.editText6);
+
 
 
 
@@ -151,6 +157,8 @@ public class activity_comprar extends ActionBarActivity {
         pt2 = Integer.valueOf(pc2)*Integer.valueOf(pp2);
         pt3 = Integer.valueOf(pc3)*Integer.valueOf(pp3);
         pt4 = Integer.valueOf(pc4)*Integer.valueOf(pp4);
+
+        totaltotal =""+(0.16 * (pt1 + pt2 + pt3 + pt4) + (pt1 + pt2 + pt3 + pt4));
 
         if(!pc1.isEmpty()){
             if(!pc1.contentEquals("0"))
@@ -243,6 +251,7 @@ public class activity_comprar extends ActionBarActivity {
 
     public Image imagen2;
 
+
     public void generarpdf(View view) {
 
 
@@ -254,7 +263,8 @@ public class activity_comprar extends ActionBarActivity {
 
             // instanciamos el codigoqr
             fecha = new SimpleDateFormat("dd-MM-yyyy HH:mm").format(new Date());
-            codigoqr = "facturafacil-"+fecha+"-"+nombre.getText()+"-"+rfc.getText()+"-"+localidad.getText()+"-Total:"+totaldinero.toString();
+            codigoqr = "facturafacil-"+fecha+"-"+nombre.getText()+"-"+rfc.getText()+"-"+localidad.getText()+"-Total:"+totaltotal;
+
 
 
                     //generamos el codigo qr
@@ -433,7 +443,7 @@ public class activity_comprar extends ActionBarActivity {
                 documento.add(new Paragraph(" "));
                 documento.add(new Paragraph("                                                                                                                      Sub total: " + (pt1 + pt2 + pt3 + pt4)));
                 documento.add(new Paragraph("                                                                                                                      I.V.A: " + 0.16 * (pt1 + pt2 + pt3 + pt4)));
-                documento.add(new Paragraph("                                                                                                                      Total: " + (0.16 * (pt1 + pt2 + pt3 + pt4) + (pt1 + pt2 + pt3 + pt4))));
+                documento.add(new Paragraph("                                                                                                                      Total: " + totaltotal));
 
                 documento.add(new Paragraph(" "));
 
@@ -473,8 +483,37 @@ public class activity_comprar extends ActionBarActivity {
 
                 // Cerramos el documento.
                 documento.close();
+
+
+                //creamos el xml
+
+                try {
+                    File x = crearFichero(NOMBRE_DOCUMENTO2);
+                    FileOutputStream ficheroxml = new FileOutputStream(
+                            x.getAbsolutePath());
+
+                    OutputStreamWriter fichxml = new OutputStreamWriter(ficheroxml);
+
+                    fichxml.write("<cfdi:Comprobante xsi:schemaLocation=http://www.sat.gob.mx/cfd/3 http://www.sat.gob.mx/sitio_internet/cfd/3/cfdv32.xsdversion=\"3.2\" fecha=\""+fecha+"\"folio=\"1\" serie=\"A\" subTotal="+totaldinero+" descuento=\"0.00\" total="+totaltotal+" Moneda=\"MXN\"");
+                    fichxml.write("\ncondicionesDePago=\"Contado\" tipoDeComprobante=\"ingreso\" noCertificado=\"20001000000100001703\"");
+                    fichxml.write("\ncertificado=\"MIIFLTCCBBWgAwIBAgIUMjAwMDEwMDAwMDAxMDAwMDE3MDMwDQYJKoZIhvcNAQEFBQAwggFvMRgwFgYDVQQDDA9BLkMuIGRlIHBydWViYXMxLzAtBgNVBAoMJlNlcnZpY2lvIGRlIEFkbWluaXN0cmFjacOzbiBUcmlidXRhcmlhMTgwNgYDVQQLDC9BZG1pbmlzdHJhY2nDs24gZGUgU2VndXJpZGFkIGRlIGxhIEluZm9ybWFjacOzbjEpMCcGCSqGSIb3DQEJARYaYXNpc25ldEBwcnVlYmFzLnNhdC5nb2IubXgxJjAkBgNVBAkMHUF2LiBIaWRhbGdvIDc3LCBDb2wuIEd1ZXJyZXJvMQ4wDAYDVQQRDAUwNjMwMDELMAkGA1UEBhMCTVgxGTAXBgNVBAgMEERpc3RyaXRvIEZlZGVyYWwxEjAQBgNVBAcMCUNveW9hY8OhbjEVMBMGA1UELRMMU0FUOTcwNzAxTk4zMTIwMAYJKoZIhvcNAQkCDCNSZXNwb25zYWJsZTogSMOpY3RvciBPcm5lbGFzIEFyY2lnYTAeFw0xMDExMTkxOTM3MTRaFw0xMjExMTgxOTM3MTRaMIHGMSEwHwYDVQQDExhFRElUT1JJQUwgU0lTVEEgU0EgREUgQ1YxITAfBgNVBCkTGEVESVRPUklBTCBTSVNUQSBTQSBERSBDVjEhMB8GA1UEChMYRURJVE9SSUFMIFNJU1RBIFNBIERFIENWMSUwIwYDVQQtExxFU0k5MjA0Mjc4ODYgLyBIRUdUNzYxMDAzNFMyMR4wHAYDVQQFExUgLyBIRUdUNzYxMDAzTURGTlNSMDgxFDASBgNVBAsTC1N1Y3Vyc2FsQVZMMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQD16plVVRcPvh0jIoj95adxvBJKf/HleXgPA/24EtvrpsxWvoK9F7xXnJac35QXAzl9ZGdR4LI0ftA4N7FjaGRYipfec2MspbZUWswlB0n5GMhP6OdRYzxtLJXbk97+zasMu0XrmLWqRDdSDnCqPKRsbD7yYAr4gf0FFLkUjJUFAQIDAQABo4HqMIHnMAwGA1UdEwEB/wQCMAAwCwYDVR0PBAQDAgbAMB0GA1UdDgQWBBQ8LZCEQvmi5pC+z/Z8sd+VW12bsjAuBgNVHR8EJzAlMCOgIaAfhh1odHRwOi8vcGtpLnNhdC5nb2IubXgvc2F0LmNybDAzBggrBgEFBQcBAQQnMCUwIwYIKwYBBQUHMAGGF2h0dHA6Ly9vY3NwLnNhdC5nb2IubXgvMB8GA1UdIwQYMBaAFOtZfQQimlONnnEaoFiWKfU54KDFMBAGA1UdIAQJMAcwBQYDKgMEMBMGA1UdJQQMMAoGCCsGAQUFBwMCMA0GCSqGSIb3DQEBBQUAA4IBAQCZRRU8wfK3GrV1GO05mrh59KtxfayjyOkwFipqeUq0/9faaX0YwTaph/gkZnYhV5/hLCurKOoKgCmpvGIy2/0416V1ClJt4SsAvju4UlvITaloVUDMqICAJpRKK/lCygmbuRPgi4noHrIpLlh8HTwyiWHq//C1Zl1hSTDrCZK48krdagtUml3IepYJSlFnps8Rr/7thF5DAkCwoScV5gsC7TRTy/rzTZh+MeXVDD+gJTR8wSD0njdkP4DfLSYyWVBu42YyXRLd9LWpgTX3lXh7uiVeiuLP5mFbZLmfrby0sSzlzG+Mz3ohhzdmz5keu3LexIphJ/Hzu1+MbUzi2xb9\" formaDePago=\"PAGO EN UNA SOLA EXHIBICIÓN\"");
+                    fichxml.write("\nsello=\"WhU6wKjmAhfwehBHCbwVw2YANaFpjkJiV3rauEXllEMNpnaRnv4p8eBMAM1+3JxwVrFQK/+Gcy9FC3uTvOmF5HoMJGUui3ROW3wpleUCBbBdoJUVbWEVZs2UxgYewlpZ47A44O+Z9oHELFLmWdL0YEm8HF1WqoDBid8CF27tza8=\">");
+                    fichxml.write("\n<cfdi:Emisor nombre=\"FACTURA FACIL S.A DE C.V\" rfc=\"ESI920427886\">");
+                    fichxml.write("\n<cfdi:DomicilioFiscal calle=\"Mariano Escobedo\" noExterior=\"700\" colonia=\"Nueva Anzures\" localidad=\"Miguel Hidalgo\" estado=\"Distrito Federal México\" pais=\"México\" codigoPostal=\"11590\"/>");
+                    fichxml.write("\n<cfdi:RegimenFiscal Regimen=\"Personal moral régimen general de ley.\"/>");
+                    fichxml.write("\n\n<cfdi:Receptor nombre="+nombre.getText()+" rfc="+rfc.getText()+">");
+                    fichxml.close();
+
+                } catch (Exception ex) {
+
+                }
+
+
+
+
+
                 //Mostramos mensaje de confirmacion
-                Toast.makeText(getApplicationContext(), "PDF generado con exito en Descargas", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "PDF y XML generados con exito y guardados en Descargas", Toast.LENGTH_SHORT).show();
             }
 
         }
