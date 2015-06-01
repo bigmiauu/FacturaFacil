@@ -56,7 +56,7 @@ public class Inicio extends ActionBarActivity {
                 int posicion = i;
                 if(totalproductos<=5) {
                     // muestra un mensaje
-                    Toast.makeText(getApplicationContext(),"Agregado "+itemSeleccionado, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getApplicationContext(),"Agregado "+itemSeleccionado, Toast.LENGTH_SHORT).show();
                     productos.setText(productos.getText() + "\n" + itemSeleccionado);
 
                     if (posicion == 0) {
@@ -72,12 +72,12 @@ public class Inicio extends ActionBarActivity {
                     if (posicion == 2) {
                         totdinero = totdinero + pp3;
                         total.setText("" + totdinero);
-                        pc2 = pc3 + 1;
+                        pc3 = pc3 + 1;
                     }
                     if (posicion == 3) {
                         totdinero = totdinero + pp4;
                         total.setText("" + totdinero);
-                        pc2 = pc4 + 1;
+                        pc4 = pc4 + 1;
                     }
                     totalproductos++;
 
@@ -117,13 +117,35 @@ public class Inicio extends ActionBarActivity {
     }
 
     public void compra (View view){
-        Intent j = new Intent(this,  activity_comprar.class);
-        j.putExtra("totaldinero",""+totdinero);
-        j.putExtra("totalproductos",""+totalproductos);
-        j.putExtra("pc1",""+pc1);
-        j.putExtra("pc2",""+pc2);
-        j.putExtra("pc3",""+pc3);
-        j.putExtra("pc4",""+pc4);
-        startActivity(j);
+        if(totdinero==0){
+            Toast.makeText(getApplicationContext(),"No se ha seleccionado ningun producto", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Intent j = new Intent(this, activity_comprar.class);
+            j.putExtra("totaldinero", "" + totdinero);
+            j.putExtra("totalproductos", "" + totalproductos);
+            j.putExtra("pc1", "" + pc1);
+            j.putExtra("pc2", "" + pc2);
+            j.putExtra("pc3", "" + pc3);
+            j.putExtra("pc4", "" + pc4);
+
+            j.putExtra("pp1", "" + pp1);
+            j.putExtra("pp2", "" + pp2);
+            j.putExtra("pp3", "" + pp3);
+            j.putExtra("pp4", "" + pp4);
+            startActivity(j);
+        }
+    }
+
+    public void borrar (View view){
+        totalproductos = 0;
+        totdinero = 0;
+        total.setText("0");
+        productos.setText("");
+        pc1=0;
+        pc2=0;
+        pc3=0;
+        pc4=0;
+
     }
 }

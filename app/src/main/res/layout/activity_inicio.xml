@@ -88,5 +88,16 @@
         android:layout_alignEnd="@+id/textView5"
         android:onClick="compra" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Borrar"
+        android:id="@+id/button2"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:singleLine="true"
+        android:onClick="borrar" />
+
 
 </RelativeLayout>
