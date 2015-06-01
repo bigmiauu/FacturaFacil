@@ -1,51 +1,49 @@
 package nr.co.bigmiauu.facturafacil;
 
-import android.os.Environment;
-import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.TextView;
-import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.content.pm.ActivityInfo;
-import android.os.AsyncTask;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+
+
+
+import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Display;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
+
+import android.view.WindowManager;
+
 import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
+
+
+
+
+import android.os.Environment;
+
+import android.support.v7.app.ActionBarActivity;
+
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
+
 import android.widget.Toast;
 
-import java.io.FileNotFoundException;
+
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
+
+
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+
+
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
+
 
 import java.io.File;
 import java.io.FileOutputStream;
+
+import com.lowagie.text.BadElementException;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfWriter;
@@ -55,39 +53,30 @@ import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.Paragraph;
 
-import harmony.java.awt.Color;
+
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
-import android.app.Activity;
-import android.graphics.Bitmap;
+
 import android.graphics.BitmapFactory;
-import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
+
+
 import com.lowagie.text.Element;
-import com.lowagie.text.Font;
-import com.lowagie.text.FontFactory;
+
 import com.lowagie.text.HeaderFooter;
 import com.lowagie.text.Image;
-import com.lowagie.text.Paragraph;
+
 import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+
 
 
 
 public class activity_comprar extends ActionBarActivity {
 
+    private String LOG_TAG = "GenerateQRCode";
 
     private EditText nombre;
     private EditText rfc;
@@ -99,6 +88,8 @@ public class activity_comprar extends ActionBarActivity {
 
     private String totaldinero;
     private TextView descripcion;
+
+    private String codigoqr;
 
     private String pc1;
     private String pc2;
@@ -243,13 +234,70 @@ public class activity_comprar extends ActionBarActivity {
         return ruta;
     }
 
+
+
+
+
+
+
+
+    public Image imagen2;
+
     public void generarpdf(View view) {
 
 
 
-        if (nombre.getText().equals("") || rfc.getText().equals("") || calle.getText().equals("") || colonia.getText().equals("") || localidad.getText().equals("") || cp.getText().equals("")) {
+        if (nombre.getText().toString().isEmpty() || rfc.getText().toString().isEmpty() || calle.getText().toString().isEmpty() || colonia.getText().toString().isEmpty() || localidad.getText().toString().isEmpty() || cp.getText().toString().isEmpty()) {
             Toast.makeText(getApplicationContext(), "Falta uno o mas datos por llenar", Toast.LENGTH_SHORT).show();
         } else {
+
+
+            // instanciamos el codigoqr
+            fecha = new SimpleDateFormat("dd-MM-yyyy HH:mm").format(new Date());
+            codigoqr = "facturafacil-"+fecha+"-"+nombre.getText()+"-"+rfc.getText()+"-"+localidad.getText()+"-Total:"+totaldinero.toString();
+
+
+                    //generamos el codigo qr
+                    Log.v(LOG_TAG, codigoqr);
+
+                    //creamos el tamaño
+                    WindowManager manager = (WindowManager) getSystemService(WINDOW_SERVICE);
+                    Display display = manager.getDefaultDisplay();
+                    Point point = new Point();
+                    display.getSize(point);
+                    int width = point.x;
+                    int height = point.y;
+                    width= width* 1/2;
+                    height= height* 1/2;
+                    int smallerDimension = width < height ? width : height;
+                    smallerDimension = smallerDimension * 1/2;
+
+                    //Encode with a QR Code image
+                    QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(codigoqr,
+                            null,
+                            Contents.Type.TEXT,
+                            BarcodeFormat.QR_CODE.toString(),
+                            smallerDimension);
+                    try {
+                        Bitmap bitmapafl = qrCodeEncoder.encodeAsBitmap();
+                        ByteArrayOutputStream stream2 = new ByteArrayOutputStream();
+                        bitmapafl.compress(Bitmap.CompressFormat.JPEG, 100, stream2);
+                        try {
+                            imagen2 = Image.getInstance(stream2.toByteArray());
+                        } catch (BadElementException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    } catch (WriterException e) {
+                        e.printStackTrace();
+                    }
+
+        }
+
+
 
             // Creamos el documento.
             Document documento = new Document();
@@ -268,13 +316,13 @@ public class activity_comprar extends ActionBarActivity {
                 PdfWriter writer = PdfWriter.getInstance(documento, ficheroPdf);
 
                 //definimos las fuentes
-                Font font = FontFactory.getFont(FontFactory.HELVETICA, 20,
+                Font font = FontFactory.getFont(FontFactory.HELVETICA, 14,
                         Font.BOLD, Color.BLUE);
 
                 Font font2 = FontFactory.getFont(FontFactory.HELVETICA, 28,
                         Font.BOLD, Color.RED);
 
-                Font font3 = FontFactory.getFont(FontFactory.HELVETICA, 18,
+                Font font3 = FontFactory.getFont(FontFactory.HELVETICA, 12,
                         Font.BOLD, Color.BLACK);
 
                 // Incluimos el píe de página y una cabecera
@@ -308,7 +356,8 @@ public class activity_comprar extends ActionBarActivity {
                 tabla.addCell(imagen);
 
 
-                fecha = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+
+
 
 
 
@@ -316,14 +365,13 @@ public class activity_comprar extends ActionBarActivity {
 
                 tabla.addCell("Folio Fiscal\n3bca6a9a-5073-4e74-b2bd-444ffa960f6c\n" +
                         "N°de Serie del Cert. del SAT\n00001000000300171326\n" +
-                        "Fecha y hora de certicación\n"+fecha+"\n11:53:11p.m.");
+                        "Fecha y hora de certicación\n"+fecha);
 
                 documento.add(tabla);
 
 
                 // Insertamos la tabla con datos del cliente.
                 documento.add(new Paragraph("           Datos del cliente", font3));
-                documento.add(new Paragraph(" "));
                 PdfPTable tabla1 = new PdfPTable(1);
 
                 tabla1.addCell("Nombre: " + nombre.getText() + "\n" +
@@ -337,7 +385,6 @@ public class activity_comprar extends ActionBarActivity {
 
                 // Insertamos la tabla con los datos de la orden.
                 documento.add(new Paragraph("           Datos del pedido", font3));
-                documento.add(new Paragraph(" "));
                 PdfPTable tabla2 = new PdfPTable(5);
 
                 tabla2.addCell("Cantidad");
@@ -388,9 +435,12 @@ public class activity_comprar extends ActionBarActivity {
                 documento.add(new Paragraph("                                                                                                                      I.V.A: " + 0.16 * (pt1 + pt2 + pt3 + pt4)));
                 documento.add(new Paragraph("                                                                                                                      Total: " + (0.16 * (pt1 + pt2 + pt3 + pt4) + (pt1 + pt2 + pt3 + pt4))));
 
-                // Añadimos un título con la fuente por defecto.
-                documento.add(new Paragraph(""));
+                documento.add(new Paragraph(" "));
 
+                PdfPTable tabla3 = new PdfPTable(2);
+                tabla3.addCell(imagen2);
+                tabla3.addCell(codigoqr);
+                documento.add(tabla3);
 
                 // Insertamos una imagen que se encuentra en los recursos de la
                 // aplicación.
@@ -423,8 +473,10 @@ public class activity_comprar extends ActionBarActivity {
 
                 // Cerramos el documento.
                 documento.close();
+                //Mostramos mensaje de confirmacion
+                Toast.makeText(getApplicationContext(), "PDF generado con exito en Descargas", Toast.LENGTH_SHORT).show();
             }
 
         }
     }
-}
+
